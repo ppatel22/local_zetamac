@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Math Question</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .answer-input {
+            font-size: 18px;
+            padding: 5px 10px;
+        }
+        #score {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        #timer {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="question">
+        <span id="question-text"></span> = <input type="text" class="answer-input" id="answer-input">
+        <div id="result"></div>
+    </div>
+    <div id="score">Score: <span id="score-value">0</span></div>
+    <div id="timer">Time remaining: <span id="countdown">120</span> seconds</div>
+
+    <script>
+        const resultDiv = document.getElementById('result');
+        const answers = {{ ans_arr | tojson }};
+        const questions = {{ q_arr | tojson }};
+        let currentQuestionIndex = 0; // Start with the first question
+        let score = 0; // Initialize score counter
+        let countdownValue = 120; // Countdown timer value
+
+        displayQuestion(currentQuestionIndex); // Display the first question initially
+        startCountdown(); // Start the countdown timer
+
+        const answerInput = document.getElementById('answer-input');
+        const scoreValueElement = document.getElementById('score-value');
+        const countdownElement = document.getElementById('countdown');
+
+        answerInput.addEventListener('input', function() {
+            const userAnswer = parseInt(answerInput.value, 10);
+            const correctAnswer = answers[currentQuestionIndex];
+
+            if (userAnswer === correctAnswer) {
+                resultDiv.textContent = 'Correct!';
+                score++; // Increment score on correct answer
+                scoreValueElement.textContent = score; // Update score display
+                setTimeout(function() {
+                    resultDiv.textContent = '';
+                    answerInput.value = ''; // Clear the input field
+                    currentQuestionIndex++; // Move to the next question
+                    if (currentQuestionIndex < questions.length) {
+                        displayQuestion(currentQuestionIndex); // Display the next question
+                    } else {
+                        // If all questions are answered, redirect to ending page with score
+                        window.location.href = '/ending?score=' + score;
+                    }
+                }, 1000); // Refresh after 1 second
+            } else {
+                resultDiv.textContent = 'Incorrect';
+            }
+        });
+
+        function displayQuestion(index) {
+            const questionText = questions[index];
+            const questionElement = document.getElementById('question-text');
+            questionElement.textContent = questionText;
+        }
+
+        function startCountdown() {
+            const timerInterval = setInterval(function() {
+                countdownValue--;
+                countdownElement.textContent = countdownValue;
+
+                if (countdownValue <= 0) {
+                    clearInterval(timerInterval);
+                    // Redirect to ending page when timer runs out
+                    window.location.href = '/ending?score=' + score;
+                }
+            }, 1000); // Update every 1 second
+        }
+    </script>
+</body>
+</html>
